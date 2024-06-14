@@ -1,0 +1,56 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.22
+
+      - name: Build
+        run: |
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o bin/${{ matrix.goos }}/ .
+
+      - name: Archive executable
+        run: |
+          zip -j bin/msxconverter-${{ matrix.goos }}-${{ matrix.goarch }}.zip bin/${{ matrix.goos }}/*
+
+      - name: Upload release asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: msxconverter-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: bin/msxconverter-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: bin
+
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: bin/**/*.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
