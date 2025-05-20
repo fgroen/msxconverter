@@ -86,6 +86,20 @@ func doubleSizePaletted(width, height int, img *image.Paletted) image.Image {
 	return doubleImg
 }
 
+// doubleHeightPaletted duplicates each row of a paletted image to correct the
+// aspect ratio for formats that use rectangular pixels.
+func doubleHeightPaletted(width, height int, img *image.Paletted) *image.Paletted {
+	doubleImg := image.NewPaletted(image.Rect(0, 0, width, height*2), img.Palette)
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			c := img.ColorIndexAt(x, y)
+			doubleImg.SetColorIndex(x, y*2, c)
+			doubleImg.SetColorIndex(x, y*2+1, c)
+		}
+	}
+	return doubleImg
+}
+
 func getPalette(data []byte, paletteOffset int) color.Palette {
 	paletteData := data[paletteOffset : paletteOffset+32]
 	palette := make(color.Palette, 16)

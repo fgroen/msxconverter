@@ -41,6 +41,6 @@ func DetectFormat(data []byte, inputFileName string, fileType string) string {
 
 	default:
 		// just use the extension for filetype, until we have something better..
-		return strings.TrimLeft(filepath.Ext(inputFileName), ".")
+		return strings.ToUpper(strings.TrimLeft(filepath.Ext(inputFileName), "."))
 	}
 }

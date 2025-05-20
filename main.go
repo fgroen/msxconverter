@@ -20,12 +20,13 @@ var validTypes = map[string]bool{
 	"SC8": true,
 	"S10": true,
 	"S12": true,
+	"STP": true,
 	"WB2": true,
 	"BAS": true,
 }
 
 func main() {
-	typeFlag := flag.String("t", "", "Specify the file type (e.g., BAS, WB2, SC5, SC7, SC8, S10, S12)")
+	typeFlag := flag.String("t", "", "Specify the file type (e.g., BAS, WB2, SC5, SC7, SC8, S10, S12, STP)")
 	outputFormatFlag := flag.String("format", "png", "Specify the output format (e.g., png, jpg)")
 	doubleSizeFlag := flag.Bool("double", false, "Double the image size")
 	verboseFlag := flag.Bool("verbose", false, "Verbose output")
@@ -116,6 +117,8 @@ func decodeData(data []byte, fileType string, config decoders.Config) (decoders.
 		return images.DecodeScreen10(data, config)
 	case "S12":
 		return images.DecodeScreen12(data, config)
+	case "STP":
+		return images.DecodeSTP(data, config)
 	default:
 		return decoders.DecoderResult{}, fmt.Errorf("unknown file format: %s", fileType)
 	}
