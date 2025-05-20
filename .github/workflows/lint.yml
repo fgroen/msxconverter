@@ -55,9 +55,11 @@ jobs:
       # 3. go fmt + reviewdog
       ############################################
       - name: Run gofmt with reviewdog
-        uses: reviewdog/action-gofmt@v1
+        uses: reviewdog/action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
+          tool_name: gofmt
           level: warning
-          fail_on_error: false
+          run: |
+            gofmt -l -s . | grep -v '^vendor/' | xargs -r -n1 -I{} echo "::warning file={}::File is not gofmt'ed"
