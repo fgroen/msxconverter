@@ -13,3 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Added WBASS2 file conversion.
 - Added screen 5, screen 7, and screen 8 image file conversion.
 - Added screen 10 and screen 12 image file conversion.
+
+## [0.0.2] - 2025-05-20
+
+### Added
+
+- Support for Dynamic Publisher STP stamp images.

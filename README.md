@@ -6,7 +6,7 @@ This is my first project using Go, so I am open to feedback and improvements.
 
 ## Features
 
-- Convert MSX screen formats (SC5, SC7, SC8, S10, S12) to PNG images.
+- Convert MSX screen formats (SC5, SC7, SC8, S10, S12, STP) to PNG images.
 - Convert MSX BASIC files (BAS) to text.
 - Convert WBASS2 files (WB2) to text.
 - Supports additional palette data for accurate color rendering.
@@ -33,7 +33,7 @@ msxconverter [options] inputfile(s) [outputfile]
 
 ### Options
 
-- `-t`: Specify the file type (e.g., BAS, WB2, SC5, SC7, SC8, S10, S12).
+- `-t`: Specify the file type (e.g., BAS, WB2, SC5, SC7, SC8, S10, S12, STP).
 - `-double`: Double the image output size.
 
 ### Examples
@@ -73,6 +73,7 @@ msxconverter -t WB2 input.wb2 output.txt
 - **SC8**: MSX Screen 8 files.
 - **S10**: MSX Screen 10 files.
 - **S12**: MSX Screen 12 files.
+- **STP**: Dynamic Publisher stamp files.
 
 #### Output Formats
 
