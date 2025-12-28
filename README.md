@@ -6,10 +6,10 @@ This is my first project using Go, so I am open to feedback and improvements.
 
 ## Features
 
-- Convert MSX screen formats (SC5, SC7, SC8, S10, S12, STP) to PNG images.
+- Convert MSX screen formats (SC5, SC7, SC8, S10, S12, STP, CMP) to PNG images.
 - Convert MSX BASIC files (BAS) to text.
 - Convert WBASS2 files (WB2) to text.
-- Supports additional palette data for accurate color rendering.
+- Supports additional palette data for accurate color rendering (raw palette files, binary header files, or SCREEN 5 files).
 - Option to double the size of the output image.
 - Verbose output for detailed logging.
 
@@ -33,7 +33,7 @@ msxconverter [options] inputfile(s) [outputfile]
 
 ### Options
 
-- `-t`: Specify the file type (e.g., BAS, WB2, SC5, SC7, SC8, S10, S12, STP).
+- `-t`: Specify the file type (e.g., BAS, WB2, SC5, SC7, SC8, S10, S12, STP, CMP).
 - `-double`: Double the image output size.
 
 ### Examples
@@ -56,6 +56,18 @@ msxconverter -t BAS input.bas output.txt
 msxconverter -t SC7 -double input.sc7,input.pl5 output.png
 ```
 
+#### Convert a CMP file to PNG
+
+```sh
+msxconverter -t CMP input.cmp output.png
+```
+
+#### Convert a CMP file with a custom palette
+
+```sh
+msxconverter -t CMP input.cmp,palette.pl5 output.png
+```
+
 #### Convert a WB2 file to text
 
 ```sh
@@ -74,11 +86,20 @@ msxconverter -t WB2 input.wb2 output.txt
 - **S10**: MSX Screen 10 files.
 - **S12**: MSX Screen 12 files.
 - **STP**: Dynamic Publisher stamp files.
+- **CMP**: RLE-compressed SCREEN 5 images (used in Dot Designer's Club by T&E Soft, 1989).
 
 #### Output Formats
 
 - **png**: PNG image format (default for screen files).
 - **txt**: Plain text format (default for BASIC and WBASS2 files).
+
+#### Palette Files
+
+Palette files can be provided as a second input file (comma-separated) for SC5, SC7, and CMP formats. The tool automatically detects the palette format:
+
+- **Raw palette**: 32-byte file containing 16 colors (2 bytes per color)
+- **Binary header file**: File starting with `0xFE` header followed by 32 bytes of palette data
+- **SCREEN 5 file**: Full SCREEN 5 file from which the palette is automatically extracted
 
 ## TODO
 

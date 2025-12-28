@@ -1,6 +1,7 @@
 package msxbasic
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -44,5 +45,28 @@ func TestNegativeExponent(t *testing.T) {
 				t.Errorf("customBCDToString(%v) = %v; want %v", tt.input, result, tt.expected)
 			}
 		})
+	}
+}
+
+func TestOctalNumber(t *testing.T) {
+	data := []byte{0xFF, 0x00, 0x00, 0x00, 0x00, 0x0B, 0x34, 0x12, 0x00, 0x00, 0x00}
+	result, err := DecodeMSXBasic(data)
+	if err != nil {
+		t.Fatalf("DecodeMSXBasic error: %v", err)
+	}
+	// 0x12 << 8 | 0x34 = 0x1234 = 4660 decimal = 11064 octal
+	if !strings.Contains(result.Text, "&O11064") {
+		t.Errorf("Expected octal number &O11064, got: %s", result.Text)
+	}
+}
+
+func TestHexadecimalNumber(t *testing.T) {
+	data := []byte{0xFF, 0x00, 0x00, 0x00, 0x00, 0x0C, 0xEF, 0xCD, 0x00, 0x00, 0x00}
+	result, err := DecodeMSXBasic(data)
+	if err != nil {
+		t.Fatalf("DecodeMSXBasic error: %v", err)
+	}
+	if !strings.Contains(result.Text, "&HCDEF") {
+		t.Errorf("Expected hexadecimal number &HCDEF, got: %s", result.Text)
 	}
 }

@@ -1,7 +1,7 @@
 package wbass2_test
 
 import (
-	"msxconverter/decoders"
+	"msxconverter/decoders/types"
 	"msxconverter/decoders/wbass2"
 	"testing"
 
@@ -22,7 +22,7 @@ func TestDecodeWBASS2_InvalidStartByte(t *testing.T) {
 
 func TestDecodeWBASS2_EmptyFile(t *testing.T) {
 	data := []byte{0xFD, 0xFF, 0xFF}
-	expected := decoders.DecoderResult{Text: "", IsText: true}
+	expected := types.DecoderResult{Text: "", IsText: true}
 
 	result, err := wbass2.DecodeWBASS2(data)
 	assert.NoError(t, err, "Expected no error for valid input")
@@ -32,7 +32,7 @@ func TestDecodeWBASS2_EmptyFile(t *testing.T) {
 func TestDecodeWBASS2_ValidInput(t *testing.T) {
 	data := []byte{0xFD,
 		0x06, 0x80, 0x80, 0x02, 0xE0, 0x01, 0x00, 0xFF, 0xFF} // Sample valid input
-	expected := decoders.DecoderResult{Text: "        LD    A,1\n", IsText: true}
+	expected := types.DecoderResult{Text: "        LD    A,1\n", IsText: true}
 
 	result, err := wbass2.DecodeWBASS2(data)
 	assert.NoError(t, err, "Expected no error for valid input")

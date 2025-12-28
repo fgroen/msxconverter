@@ -2,28 +2,28 @@ package images
 
 import (
 	"encoding/binary"
-	"errors"
+	"fmt"
 	"image"
 	"image/color"
-	"msxconverter/decoders"
+	"msxconverter/decoders/types"
 )
 
 // DecodeSTP decodes Dynamic Publisher STP stamp files.
 // STP files start with width and height as little endian words
 // followed by packed 2-bit pixel values (4 pixels per byte).
 // The palette is monochrome.
-func DecodeSTP(data []byte, config decoders.Config) (decoders.DecoderResult, error) {
+func DecodeSTP(data []byte, config types.Config) (types.DecoderResult, error) {
 	if len(data) < 4 {
-		return decoders.DecoderResult{}, errors.New("invalid STP file")
+		return types.DecoderResult{}, fmt.Errorf("invalid STP file: file too small (got %d bytes, need at least 4)", len(data))
 	}
 
 	width := int(binary.LittleEndian.Uint16(data[0:2]))
 	height := int(binary.LittleEndian.Uint16(data[2:4]))
 	pixels := data[4:]
 
-	expected := (width*height + 3) / 4
+		expected := (width*height + 3) / 4
 	if len(pixels) < expected {
-		return decoders.DecoderResult{}, errors.New("incomplete STP pixel data")
+		return types.DecoderResult{}, fmt.Errorf("incomplete STP pixel data: got %d bytes, expected %d bytes for %dx%d image", len(pixels), expected, width, height)
 	}
 
 	palette := color.Palette{

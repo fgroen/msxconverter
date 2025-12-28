@@ -2,9 +2,8 @@ package wbass2
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"msxconverter/decoders"
+	"msxconverter/decoders/types"
 	"strings"
 )
 
@@ -25,11 +24,14 @@ var (
 	kartab    = []string{",", ")", "(", "+", "-", "*", "/", "^"}
 )
 
-func DecodeWBASS2(data []byte) (decoders.DecoderResult, error) {
-	decoderResult := decoders.DecoderResult{}
+func DecodeWBASS2(data []byte) (types.DecoderResult, error) {
+	decoderResult := types.DecoderResult{}
 
-	if len(data) == 0 || data[0] != 0xFD {
-		return decoderResult, errors.New("invalid WBASS2 file")
+	if len(data) == 0 {
+		return decoderResult, fmt.Errorf("invalid WBASS2 file: file is empty")
+	}
+	if data[0] != 0xFD {
+		return decoderResult, fmt.Errorf("invalid WBASS2 file: expected magic byte 0xFD, got 0x%02X", data[0])
 	}
 
 	// see TOKENIZE and DETOK in wbass2-1.asm
@@ -39,7 +41,7 @@ func DecodeWBASS2(data []byte) (decoders.DecoderResult, error) {
 
 	beglabel := findLabelOffset(data)
 	if beglabel == -1 {
-		return decoderResult, errors.New("invalid WBASS2 file structure")
+		return decoderResult, fmt.Errorf("invalid WBASS2 file structure: could not find label offset")
 	}
 
 	for offset < len(data) {

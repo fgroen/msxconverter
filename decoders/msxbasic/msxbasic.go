@@ -2,9 +2,8 @@ package msxbasic
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
-	"msxconverter/decoders"
+	"msxconverter/decoders/types"
 	"strings"
 )
 
@@ -36,11 +35,14 @@ var tokenMapFF = []string{
 
 // tokens from https://www.msx.org/wiki/Internal_Structure_Of_BASIC_listing
 
-func DecodeMSXBasic(data []byte) (decoders.DecoderResult, error) {
-	decoderResult := decoders.DecoderResult{}
+func DecodeMSXBasic(data []byte) (types.DecoderResult, error) {
+	decoderResult := types.DecoderResult{}
 
-	if len(data) == 0 || data[0] != 0xFF {
-		return decoderResult, errors.New("invalid MSX Basic file")
+	if len(data) == 0 {
+		return decoderResult, fmt.Errorf("invalid MSX Basic file: file is empty")
+	}
+	if data[0] != 0xFF {
+		return decoderResult, fmt.Errorf("invalid MSX Basic file: expected magic byte 0xFF, got 0x%02X", data[0])
 	}
 
 	var result bytes.Buffer
@@ -62,7 +64,17 @@ func DecodeMSXBasic(data []byte) (decoders.DecoderResult, error) {
 		// Read tokens until 0x00 (end of line)
 		for offset < len(data) && data[offset] != 0x00 {
 			token := data[offset]
-			if token == 0x0E || token == 0x1C {
+			if token == 0x0B {
+				// 0B mm nn = octal number &Onnmm
+				value := int(data[offset+1]) | int(data[offset+2])<<8
+				offset += 2
+				result.WriteString(fmt.Sprintf("&O%o", value))
+			} else if token == 0x0C {
+				// 0C mm nn = hexadecimal number &Hnnmm
+				value := int(data[offset+1]) | int(data[offset+2])<<8
+				offset += 2
+				result.WriteString(fmt.Sprintf("&H%X", value))
+			} else if token == 0x0E || token == 0x1C {
 				line := int(data[offset+1]) | int(data[offset+2])<<8
 				offset += 2
 				result.WriteString(fmt.Sprintf("%d", line))

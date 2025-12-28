@@ -16,14 +16,15 @@ func DetectFormat(data []byte, inputFileName string, fileType string) string {
 	}
 
 	switch data[0] {
-	case 0xFF:
-		return "BAS" // MSX Basic
-	case 0xFD:
-		return "WB2" // WBASS2 file
-	case 0xFE:
+	case MagicByteBAS:
+		return "BAS"
+	case MagicByteWB2:
+		return "WB2"
+	case MagicByteBinary:
 		if len(data) >= 7 {
 			extension := strings.ToUpper(strings.TrimLeft(filepath.Ext(inputFileName), "."))
 
+			// First, try to detect by extension (most reliable)
 			if extension == "GE5" || extension == "SC5" || extension == "SR5" {
 				return "SC5"
 			} else if extension == "SC7" || extension == "SR7" {
@@ -34,13 +35,25 @@ func DetectFormat(data []byte, inputFileName string, fileType string) string {
 				return "S10"
 			} else if extension == "S12" || extension == "SCC" || extension == "SRS" {
 				return "S12"
+			} else if extension == "CMP" {
+				return "CMP"
 			}
 
+			// Extension not recognized - check for known binary headers
+			if len(data) >= len(HeaderSC5) {
+				if matchesHeader(data, HeaderSC5) {
+					return "SC5"
+				}
+				// Add more header checks here as we discover them
+			}
 		}
 		return "unknown"
 
 	default:
-		// just use the extension for filetype, until we have something better..
-		return strings.ToUpper(strings.TrimLeft(filepath.Ext(inputFileName), "."))
+		extension := strings.ToUpper(strings.TrimLeft(filepath.Ext(inputFileName), "."))
+		if extension != "" {
+			return extension
+		}
+		return "unknown"
 	}
 }

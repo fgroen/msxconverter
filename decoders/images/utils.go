@@ -3,10 +3,11 @@ package images
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
-	"msxconverter/decoders"
+	"msxconverter/decoders/types"
 )
 
 // Lookup tables for color conversion
@@ -27,16 +28,6 @@ var (
 	}
 )
 
-const (
-	ScreenWidth    = 256
-	ScreenWidth7   = 512
-	ScreenHeight   = 212
-	Height192      = 192
-	PaletteOffset5 = 0x7680
-	PaletteOffset  = 0xFA80
-)
-
-// Utility functions
 func clamp(val, min, max int) int {
 	if val < min {
 		return min
@@ -47,12 +38,12 @@ func clamp(val, min, max int) int {
 	return val
 }
 
-func encodePNG(img image.Image) (decoders.DecoderResult, error) {
+func encodePNG(img image.Image) (types.DecoderResult, error) {
 	var buffer bytes.Buffer
 	if err := png.Encode(&buffer, img); err != nil {
-		return decoders.DecoderResult{}, err
+		return types.DecoderResult{}, err
 	}
-	return decoders.DecoderResult{
+	return types.DecoderResult{
 		Buffer: bytes.NewBuffer(buffer.Bytes()),
 		IsText: false,
 	}, nil
@@ -115,8 +106,48 @@ func getPalette(data []byte, paletteOffset int) color.Palette {
 
 func calculateHeight(endAddress uint16, width int) int {
 	endLine := endAddress / uint16(width)
-	if endLine <= Height192 {
-		return Height192
+	if endLine <= ScreenHeightMSX1 {
+		return ScreenHeightMSX1
 	}
-	return ScreenHeight
+	return ScreenHeightMSX2
 }
+
+type screenHeader struct {
+	beginAddress uint16
+	endAddress   uint16
+	pixels       []byte
+}
+
+func parseScreenHeader(data []byte) (screenHeader, error) {
+	if len(data) < 7 {
+		return screenHeader{}, fmt.Errorf("screen data too small: got %d bytes, need at least 7", len(data))
+	}
+	return screenHeader{
+		beginAddress: binary.LittleEndian.Uint16(data[1:3]),
+		endAddress:   binary.LittleEndian.Uint16(data[3:5]),
+		pixels:       data[7:],
+	}, nil
+}
+
+// ResolvePalette resolves the palette to use, checking embedded palette, extraData, or default
+func ResolvePalette(pixels []byte, beginAddress, endAddress uint16, paletteOffset int, extraData []byte) color.Palette {
+	if paletteOffset > 0 {
+		if endAddress >= uint16(paletteOffset) {
+			return getPalette(pixels, paletteOffset-int(beginAddress))
+		}
+		if extraData != nil {
+			return getPalette(extraData, 0)
+		}
+		return getPalette(defaultPalette, 0)
+	}
+	if extraData != nil {
+		return getPalette(extraData, 0)
+	}
+	return getPalette(defaultPalette, 0)
+}
+
+// GetDefaultPalette returns the default MSX SCREEN 5 palette
+func GetDefaultPalette() color.Palette {
+	return getPalette(defaultPalette, 0)
+}
+

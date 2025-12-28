@@ -1,10 +1,6 @@
-package decoders
+package types
 
 import "bytes"
-
-type Decoder interface {
-	Decode(data []byte, config Config) (DecoderResult, error)
-}
 
 type Config struct {
 	OutputFormat    string
@@ -18,3 +14,4 @@ type DecoderResult struct {
 	Buffer *bytes.Buffer
 	IsText bool
 }
+
